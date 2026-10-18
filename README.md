@@ -1,4 +1,4 @@
-# ??? Punara Vistara (???? ???????)
+# 🏛️ Punara Vistara (ಪುನರ ವಿಸ್ತಾರ)
 ### AI-Powered Historical Artifact Inpainting & Ancient Epigraphy Decipherment
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
@@ -10,7 +10,7 @@
 
 ---
 
-## ?? Overview
+## 📖 Overview
 
 **Punara Vistara** is an advanced artificial intelligence platform dedicated to the preservation, non-destructive restoration, and epigraphical analysis of ancient cultural heritage. Designed for archaeologists, epigraphists, museum conservators, and heritage enthusiasts, Punara Vistara provides:
 
@@ -19,29 +19,29 @@
 
 ---
 
-## ??? System Architecture
+## 🏛️ System Architecture
 
-\\\mermaid
+```mermaid
 graph TD
-    subgraph ClientLayer ["Client Interface (HTML5 / Modern CSS / Vanilla JS)"]
-        UI_Hub["Navigation Hub\n(/)"]
-        UI_Restore["Sculpture Restoration Studio\n(/restoration)"]
-        UI_OCR["Epigraphy Decipherment Studio\n(/ocr)"]
+    subgraph ClientLayer ["Client Interface"]
+        UI_Hub["Navigation Hub (/)"]
+        UI_Restore["Sculpture Restoration Studio (/restoration)"]
+        UI_OCR["Epigraphy Decipherment Studio (/ocr)"]
     end
 
-    subgraph ServerLayer ["Flask Application Server (backend_server.py)"]
+    subgraph ServerLayer ["Flask Application Server"]
         Router["Flask Request Dispatcher & CORS"]
-        EP_Inpaint["/api/inpaint\n(Restoration Engine)"]
-        EP_OCR["/process\n(Epigraphy Decipherment)"]
-        EP_Health["/api/health\n(Status Monitor)"]
+        EP_Inpaint["/api/inpaint (Restoration Engine)"]
+        EP_OCR["/process (Epigraphy Decipherment)"]
+        EP_Health["/api/health (Status Monitor)"]
     end
 
     subgraph RestorationEngine ["Historical Inpainting Pipeline"]
         Preprocess["B64 Decoder & Mask Normalization (512x512)"]
         PromptEngine["Material & Heritage Context Prompt Generator"]
-        SD_Model["Stable Diffusion 2 Inpainting\n(stabilityai/stable-diffusion-2-inpainting)"]
-        Scheduler["DPMSolver++ Multistep Scheduler\n(use_karras_sigmas=True)"]
-        Postprocess["Alpha-Feathered Compositing\n(High-Res Non-Destructive Blend)"]
+        SD_Model["Stable Diffusion 2 Inpainting (SD2)"]
+        Scheduler["DPMSolver++ Multistep Scheduler (Karras)"]
+        Postprocess["Alpha-Feathered Compositing (High-Res Blend)"]
     end
 
     subgraph EpigraphyEngine ["Multimodal Epigraphy Analysis Pipeline"]
@@ -50,7 +50,7 @@ graph TD
         Gemini38["Gemini 3.8 Flash"]
         Gemini20["Gemini 2.0 Flash"]
         Gemini15["Gemini 1.5 Flash"]
-        Parser["Epigraphy Robust Parser\n(JSON Repair & Regex Auto-Recovery)"]
+        Parser["Epigraphy Robust Parser (JSON Repair & Regex)"]
     end
 
     UI_Hub --> Router
@@ -71,19 +71,19 @@ graph TD
     EP_OCR --> ImageOptimizer
     ImageOptimizer --> FallbackCascade
     FallbackCascade --> Gemini38
-    Gemini38 -.->|On Fail| Gemini20
-    Gemini20 -.->|On Fail| Gemini15
+    Gemini38 -.->|On Error| Gemini20
+    Gemini20 -.->|On Error| Gemini15
     FallbackCascade --> Parser
     Parser --> EP_OCR
-\\\
+```
 
 ---
 
-## ?? Restoration & Inpainting Pipeline
+## 🔬 Restoration & Inpainting Pipeline
 
 The inpainting pipeline ensures that only the damaged areas indicated by the user mask are regenerated, while 100% of the untouched original archaeological stone texture and surrounding features are preserved at original camera resolution.
 
-\\\mermaid
+```mermaid
 sequenceDiagram
     autonumber
     actor User as Conservator / User
@@ -104,28 +104,30 @@ sequenceDiagram
     Blender-->>Backend: High-fidelity restored composite
     Backend-->>Frontend: Return reconstructed image + reproduction seed
     Frontend-->>User: Display interactive before/after side-by-side comparison
-\\\
+```
 
 ---
 
-## ?? Epigraphy & Inscription Decipherment Workflow
+## 📜 Epigraphy & Inscription Decipherment Workflow
 
-\\\mermaid
+```mermaid
 flowchart LR
-    A["Raw Inscription Photo\n(Rock Edict / Pillar / Copper Plate)"] --> B["Image Preprocessor\n(Normalizes bounds to max 1600px)"]
-    B --> C["Epigraphy Structured Prompt\n(Paleography & Historical Linguistic Expert)"]
-    C --> D{"Gemini Vision API\nFallback Cascade"}
+    A["Raw Inscription Photo"] --> B["Image Preprocessor (Max 1600px)"]
+    B --> C["Epigraphy Structured Prompt"]
+    C --> D{"Gemini Vision API Cascade"}
     D -->|Attempt 1| M1["gemini-3.8-flash"]
     D -->|Fallback 1| M2["gemini-2.0-flash"]
     D -->|Fallback 2| M3["gemini-1.5-flash"]
-    M1 & M2 & M3 --> E["Robust JSON & Regex Parser\n(Auto-repairs truncated responses)"]
-    E --> F["Transcribed Original Script\n(Brahmi, Grantha, Old Kannada, etc.)"]
-    E --> G["Scholarly English Translation\n(Historical & Cultural Interpretation)"]
-\\\
+    M1 --> E["Robust JSON & Regex Parser"]
+    M2 --> E
+    M3 --> E
+    E --> F["Transcribed Original Script"]
+    E --> G["Scholarly English Translation"]
+```
 
 ---
 
-## ? Key Features
+## ✨ Key Features
 
 - **Material-Conditioned Prompting**:
   - *Sandstone*: Porous red sandstone texture with authentic ancient temple rock relief patina.
@@ -140,41 +142,41 @@ flowchart LR
 
 ---
 
-## ?? Project Structure
+## 📂 Project Structure
 
-\\\
+```
 Punara_Vistara/
-+-- backend_server.py      # Main Flask server with SD2 inpainting & Gemini Epigraphy pipeline
-+-- requirements.txt       # Python dependencies (Torch, Diffusers, Transformers, Flask)
-+-- .gitignore             # Git exclusion rules (venv, cache, temporary files)
-+-- README.md              # Project documentation and architectural blueprints
-+-- static/
-�   +-- ocr.css            # Styles for epigraphy decipherment interface
-�   +-- ocr.js             # Client logic for epigraphy camera/file upload & API calls
-�   +-- theme.css          # Core design system, variables, and typography
-�   +-- runtime.txt        # Runtime specifications
-+-- template/
-    +-- features.html      # Landing page / module selector
-    +-- frontend.html      # Ancient Epigraphy OCR & Decipherment Studio
-    +-- index.html         # AI Historical Sculpture Restoration Studio
-\\\
+├── backend_server.py      # Main Flask server with SD2 inpainting & Gemini Epigraphy pipeline
+├── requirements.txt       # Python dependencies (Torch, Diffusers, Transformers, Flask)
+├── .gitignore             # Git exclusion rules (venv, cache, temporary files)
+├── README.md              # Project documentation and architectural blueprints
+├── static/
+│   ├── ocr.css            # Styles for epigraphy decipherment interface
+│   ├── ocr.js             # Client logic for epigraphy camera/file upload & API calls
+│   ├── theme.css          # Core design system, variables, and typography
+│   └── runtime.txt        # Runtime specifications
+└── template/
+    ├── features.html      # Landing page / module selector
+    ├── frontend.html      # Ancient Epigraphy OCR & Decipherment Studio
+    └── index.html         # AI Historical Sculpture Restoration Studio
+```
 
 ---
 
-## ?? Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 - Python 3.10+ installed
 - CUDA-compatible GPU (recommended for fast inpainting) or CPU (supported with attention slicing)
 
 ### 1. Clone the Repository
-\\\ash
+```bash
 git clone https://github.com/Akshitha-Veepanjeri-G/Punara_Vistara.git
 cd Punara_Vistara
-\\\
+```
 
 ### 2. Create and Activate Virtual Environment
-\\\ash
+```bash
 # Windows
 python -m venv venv
 .\venv\Scripts\activate
@@ -182,17 +184,17 @@ python -m venv venv
 # Linux / macOS
 python3 -m venv venv
 source venv/bin/activate
-\\\
+```
 
 ### 3. Install Dependencies
-\\\ash
+```bash
 pip install -r requirements.txt
-\\\
+```
 
 ### 4. Run the Application
-\\\ash
+```bash
 python backend_server.py
-\\\
+```
 
 Once the server initializes:
 - Access the **Navigation Portal**: [http://127.0.0.1:5000/](http://127.0.0.1:5000/)
@@ -201,13 +203,13 @@ Once the server initializes:
 
 ---
 
-## ?? API Reference
+## 📡 API Reference
 
 ### 1. Historical Inpainting
-- **Endpoint**: \POST /api/inpaint\
-- **Content-Type**: \pplication/json\
+- **Endpoint**: `POST /api/inpaint`
+- **Content-Type**: `application/json`
 - **Request Body**:
-\\\json
+```json
 {
   "image_base64": "<base64_encoded_original_image>",
   "mask_base64": "<base64_encoded_binary_mask>",
@@ -217,44 +219,44 @@ Once the server initializes:
   "guidance": 8.0,
   "seed": 42
 }
-\\\
+```
 - **Response**:
-\\\json
+```json
 {
   "status": "success",
   "reconstructed_image_base64": "<base64_encoded_composite>",
   "seed": 42
 }
-\\\
+```
 
 ### 2. Epigraphy OCR & Translation
-- **Endpoint**: \POST /process\
-- **Content-Type**: \pplication/json\
+- **Endpoint**: `POST /process`
+- **Content-Type**: `application/json`
 - **Request Body**:
-\\\json
+```json
 {
   "image": "<base64_encoded_inscription_image>",
   "mime_type": "image/jpeg"
 }
-\\\
+```
 - **Response**:
-\\\json
+```json
 {
   "text": "Transcribed original script glyphs",
   "translation": "Scholarly modern English translation with historical context"
 }
-\\\
+```
 
 ### 3. Health Check
-- **Endpoint**: \GET /api/health\
+- **Endpoint**: `GET /api/health`
 - **Response**:
-\\\json
+```json
 {
   "status": "ready"
 }
-\\\
+```
 
 ---
 
-## ?? License
+## 📜 License
 This project is open-source under the MIT License. Developed for cultural heritage preservation.
