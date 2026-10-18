@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Restoration Studio | PUNARA VISTARA</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}" />
+  <style>
+    .studio-container {
+      max-width: 1420px;
+      margin: 2.5rem auto;
+      padding: 0 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .studio-top-bar {
+      margin-bottom: 2.2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+    }
+
+    .studio-title-group h1 {
+      font-family: var(--font-heritage);
+      font-size: 2.6rem;
+      font-weight: 800;
+      color: var(--text-pure);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: linear-gradient(135deg, #ffffff 30%, var(--gold-300) 70%, var(--gold-600) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .studio-title-group p {
+      color: var(--text-secondary);
+      font-size: 1rem;
+      margin-top: 0.4rem;
+    }
+
+    .sample-presets-group {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .preset-chip-btn {
+      background: rgba(220, 160, 62, 0.08);
+      border: 1px solid rgba(245, 207, 114, 0.25);
+      color: var(--gold-300);
+      padding: 0.55rem 1.1rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: var(--transition-smooth);
+    }
+
+    .preset-chip-btn:hover {
+      background: rgba(220, 160, 62, 0.2);
+      border-color: var(--gold-400);
+      transform: translateY(-2px);
+      box-shadow: 0 0 15px var(--gold-glow);
+    }
+
+    /* Studio Main Layout */
+    .studio-grid {
+      display: grid;
+      grid-template-columns: 1fr 440px;
+      gap: 2.2rem;
+      align-items: start;
+    }
+
+    @media (max-width: 1100px) {
+      .studio-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Left: Canvas Workspace */
+    .canvas-card {
+      padding: 1.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.4rem;
+    }
+
+    .luxury-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1.2rem;
+      padding: 0.8rem 1.2rem;
+      background: rgba(8, 12, 20, 0.85);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    .tool-cluster {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    .tool-label-text {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+
+    .slider-capsule {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 0.45rem 1rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 110px;
+      height: 5px;
+      border-radius: 5px;
+      background: rgba(255, 255, 255, 0.15);
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--gold-400);
+      cursor: pointer;
+      box-shadow: 0 0 10px var(--gold-glow-intense);
+      border: 1px solid #fff;
+    }
+
+    .brush-number {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--gold-300);
+      min-width: 38px;
+    }
+
+    .tool-icon-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-secondary);
+      padding: 0.55rem 0.95rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: var(--transition-smooth);
+    }
+
+    .tool-icon-btn:hover, .tool-icon-btn.active {
+      background: rgba(220, 160, 62, 0.16);
+      border-color: var(--gold-400);
+      color: #fff;
+      box-shadow: 0 0 15px -3px var(--gold-glow);
+    }
+
+    /* Museum Frame Canvas Stage */
+    .museum-frame-stage {
+      position: relative;
+      background: radial-gradient(circle at 50% 50%, #0d121c 0%, #04060a 100%);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-gold-glow);
+      min-height: 480px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      cursor: crosshair;
+      box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.9), 0 15px 35px rgba(0, 0, 0, 0.7);
+    }
+
+    .museum-frame-stage::before, .museum-frame-stage::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--gold-400);
+      pointer-events: none;
+      z-index: 10;
+    }
+    .museum-frame-stage::before {
+      top: 12px;
+      left: 12px;
+      border-right: none;
+      border-bottom: none;
+    }
+    .museum-frame-stage::after {
+      bottom: 12px;
+      right: 12px;
+      border-left: none;
+      border-top: none;
+    }
+
+    #imageCanvas {
+      max-width: 100%;
+      height: auto;
+      display: block;
+      touch-action: none;
+    }
+
+    .stage-upload-prompt {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 3.5rem 2rem;
+      cursor: pointer;
+      z-index: 5;
+    }
+
+    .crest-upload-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(245, 207, 114, 0.18) 0%, rgba(140, 91, 16, 0.08) 80%);
+      border: 1px solid var(--gold-400);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gold-300);
+      margin-bottom: 1.5rem;
+      font-size: 2.2rem;
+      box-shadow: 0 0 30px var(--gold-glow);
+      transition: var(--transition-smooth);
+    }
+
+    .stage-upload-prompt:hover .crest-upload-icon {
+      transform: scale(1.1) rotate(5deg);
+      box-shadow: 0 0 45px var(--gold-glow-intense);
+    }
+
+    /* Right: Control Suite */
+    .control-suite-card {
+      padding: 2.2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.6rem;
+    }
+
+    .suite-section {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+
+    .suite-title {
+      font-size: 0.85rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--gold-300);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Material Selector */
+    .material-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+    }
+
+    .mat-btn {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-secondary);
+      padding: 0.5rem 0.4rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      transition: var(--transition-smooth);
+    }
+
+    .mat-btn:hover, .mat-btn.active {
+      background: rgba(220, 160, 62, 0.16);
+      border-color: var(--gold-400);
+      color: #fff;
+      box-shadow: 0 0 15px -3px var(--gold-glow);
+    }
+
+    .luxury-textarea {
+      width: 100%;
+      height: 95px;
+      background: rgba(7, 10, 18, 0.85);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      padding: 0.85rem;
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      line-height: 1.55;
+      resize: vertical;
+      outline: none;
+      transition: var(--transition-smooth);
+    }
+
+    .luxury-textarea:focus {
+      border-color: var(--gold-400);
+      box-shadow: 0 0 20px var(--gold-glow);
+      background: rgba(10, 15, 26, 0.95);
+    }
+
+    .tag-palette {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      margin-top: 0.2rem;
+    }
+
+    .tag-gold-chip {
+      font-size: 0.73rem;
+      font-weight: 600;
+      background: rgba(220, 160, 62, 0.08);
+      border: 1px solid rgba(245, 207, 114, 0.2);
+      color: var(--gold-300);
+      padding: 0.28rem 0.65rem;
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .tag-gold-chip:hover {
+      background: rgba(220, 160, 62, 0.2);
+      border-color: var(--gold-400);
+      transform: translateY(-1px);
+    }
+
+    /* Seed & Quality Strip */
+    .config-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.8rem;
+    }
+
+    .config-label {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .seed-capsule {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 0.35rem 0.6rem;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--gold-300);
+    }
+
+    .mini-dice-btn {
+      background: none;
+      border: none;
+      color: var(--gold-400);
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 0 0.2rem;
+      transition: transform 0.2s ease;
+    }
+
+    .mini-dice-btn:hover {
+      transform: rotate(45deg) scale(1.2);
+    }
+
+    /* Reconstruct Progress Card */
+    .reconstruct-status-box {
+      display: none;
+      background: rgba(220, 160, 62, 0.08);
+      border: 1px solid var(--border-gold-glow);
+      padding: 1.2rem;
+      border-radius: var(--radius-sm);
+      text-align: center;
+      box-shadow: 0 0 25px rgba(220, 160, 62, 0.15);
+    }
+
+    .reconstruct-status-box.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .luxury-spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid rgba(245, 207, 114, 0.2);
+      border-top-color: var(--gold-400);
+      border-radius: 50%;
+      animation: spin 0.9s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+      margin: 0 auto 0.8rem;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Comparison Studio Showcase */
+    .comparison-stage-section {
+      margin-top: 3.5rem;
+      padding: 2.8rem;
+      display: none;
+    }
+
+    .comparison-stage-section.show {
+      display: block;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .comparison-viewport {
+      position: relative;
+      max-width: 950px;
+      margin: 2rem auto 0;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 2px solid var(--gold-400);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 40px var(--gold-glow);
+      user-select: none;
+    }
+
+    .comp-img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .comp-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 50%;
+      overflow: hidden;
+      border-right: 3px solid #fef08a;
+      box-shadow: 5px 0 25px rgba(0, 0, 0, 0.8);
+    }
+
+    .comp-overlay img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      max-width: none;
+    }
+
+    .comp-slider-handle {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #fef08a, #dca03e);
+      color: #05070d;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.8), 0 0 15px var(--gold-glow-intense);
+      cursor: ew-resize;
+      pointer-events: none;
+      font-weight: 900;
+      border: 2px solid #fff;
+    }
+
+    .comparison-legend {
+      display: flex;
+      justify-content: space-between;
+      font-weight: 800;
+      font-size: 0.95rem;
+      color: var(--gold-300);
+      margin-top: 1rem;
+      max-width: 950px;
+      margin-left: auto;
+      margin-right: auto;
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient Light Orbs -->
+  <div class="ambient-glow-orbs">
+    <div class="glow-orb-1"></div>
+    <div class="glow-orb-2"></div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <a href="/" class="nav-brand">
+      <div class="brand-emblem">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <div class="brand-info">
+        <span class="brand-name">PUNARA VISTARA</span>
+        <span class="brand-tagline">पुनर विस्तार • Heritage Sanctuary</span>
+      </div>
+    </a>
+    <ul class="nav-menu">
+      <li><a href="/" class="nav-item-link">Overview</a></li>
+      <li><a href="/restoration" class="nav-item-link active">Restoration Studio</a></li>
+      <li><a href="/ocr" class="nav-item-link">Epigraphy Reader</a></li>
+      <li>
+        <div class="system-pill">
+          <span class="pulse-dot"></span>
+          <span>Active</span>
+        </div>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Studio Container -->
+  <main class="studio-container">
+    <div class="studio-top-bar">
+      <div class="studio-title-group">
+        <h1>Sculpture Restoration Studio</h1>
+        <p>Digitally isolate fractured regions with feathered blending to reconstruct authentic stone textures and relief carvings.</p>
+      </div>
+
+      <div class="sample-presets-group">
+        <button class="preset-chip-btn" id="loadSampleCholaBtn">
+          <span>🏛️</span>
+          <span>Load Chola Bronze Sample</span>
+        </button>
+        <button class="preset-chip-btn" id="loadSampleHoysalaBtn">
+          <span>✨</span>
+          <span>Load Hoysala Relief Sample</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Hidden file input -->
+    <input type="file" id="imageInput" accept="image/*" style="display: none;" />
+
+    <div class="studio-grid">
+      <!-- Left: Interactive Canvas Workspace -->
+      <section class="glass-luxury-panel canvas-card">
+        <div class="luxury-toolbar">
+          <div class="tool-cluster">
+            <span class="tool-label-text">Radius:</span>
+            <div class="slider-capsule">
+              <input type="range" id="brushSize" min="6" max="85" value="28" />
+              <span class="brush-number" id="brushVal">28px</span>
+            </div>
+          </div>
+
+          <div class="tool-cluster">
+            <button class="tool-icon-btn active" id="brushToolBtn">
+              <span>🖌️ Brush</span>
+            </button>
+            <button class="tool-icon-btn" id="eraserToolBtn">
+              <span>🧹 Eraser</span>
+            </button>
+            <button class="tool-icon-btn" id="undoBtn" title="Undo Last Stroke">
+              <span>↩ Undo</span>
+            </button>
+            <button class="tool-icon-btn" id="clearMaskBtn">
+              <span>✕ Clear</span>
+            </button>
+            <button class="tool-icon-btn" id="uploadNewBtn">
+              <span>📁 New</span>
+            </button>
+          </div>
+
+          <div class="tool-cluster" id="viewToggleCluster" style="display: none; align-items: center; margin-left: auto;">
+            <button class="tool-icon-btn" id="toggleViewBtn" style="background: rgba(16, 185, 129, 0.15); border: 1px solid #34d399; color: #6ee7b7; font-weight: 700; padding: 0.5rem 0.95rem;">
+              <span>👁️ <span id="toggleViewText">Viewing Restored</span></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Museum Frame Canvas Stage -->
+        <div class="museum-frame-stage" id="canvasStage">
+          <div class="stage-upload-prompt" id="uploadOverlay">
+            <div class="crest-upload-icon">🏛️</div>
+            <h3 style="font-family: var(--font-title); font-size: 1.35rem; color: #fff; margin-bottom: 0.5rem;">Drop Temple Sculpture Image Here</h3>
+            <p style="color: var(--text-secondary); font-size: 0.92rem; margin-bottom: 1.5rem;">Supports High-Res JPG, PNG, WEBP</p>
+            <button class="btn-gold" onclick="document.getElementById('imageInput').click();">
+              <span>Browse Local Device</span>
+            </button>
+          </div>
+          <canvas id="imageCanvas" style="display: none;"></canvas>
+        </div>
+      </section>
+
+      <!-- Right: Historical Prompt & Execution Settings -->
+      <aside class="glass-luxury-panel control-suite-card">
+        <!-- Material Selector -->
+        <div class="suite-section">
+          <label class="suite-title">
+            <span>✦ Artifact Material Preset</span>
+          </label>
+          <div class="material-grid">
+            <button class="mat-btn active" data-mat="sandstone">🏛️ Sandstone</button>
+            <button class="mat-btn" data-mat="granite">🪨 Granite</button>
+            <button class="mat-btn" data-mat="terracotta">🏺 Terracotta</button>
+            <button class="mat-btn" data-mat="bronze">✨ Bronze</button>
+            <button class="mat-btn" data-mat="marble">🤍 Marble</button>
+          </div>
+        </div>
+
+        <div class="suite-section">
+          <label class="suite-title" for="promptDesc">
+            <span>✦ Historical Architectural Guidance</span>
+          </label>
+          <p style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.45;">
+            Specify the dynasty style, chiseled ornamentation, or deity traits:
+          </p>
+          <textarea 
+            id="promptDesc" 
+            class="luxury-textarea" 
+            placeholder="e.g., carved sandstone Chola temple pillar, realistic weathered granite texture, intricate crown detailing"
+          ></textarea>
+
+          <div class="tag-palette">
+            <span class="tag-gold-chip" onclick="addTag('Chola granite texture')">+ Chola Granite</span>
+            <span class="tag-gold-chip" onclick="addTag('Hoysala soapstone carving')">+ Hoysala Carving</span>
+            <span class="tag-gold-chip" onclick="addTag('Pallava bas-relief')">+ Pallava Relief</span>
+            <span class="tag-gold-chip" onclick="addTag('weathered bronze patina')">+ Bronze Patina</span>
+            <span class="tag-gold-chip" onclick="addTag('ornate deity halo')">+ Ornate Halo</span>
+          </div>
+        </div>
+
+        <!-- Variation & Seed Settings -->
+        <div class="suite-section" style="border-top: 1px solid var(--border-subtle); padding-top: 1.1rem;">
+          <div class="config-row">
+            <span class="config-label">Artistic Variation:</span>
+            <div class="seed-capsule">
+              <span id="seedDisplay">Auto (Random)</span>
+              <button class="mini-dice-btn" id="rollSeedBtn" title="Roll New Variation Seed">🎲</button>
+            </div>
+          </div>
+
+          <div class="config-row" style="margin-top: 0.5rem;">
+            <span class="config-label">Selected Region:</span>
+            <span id="maskStatusText" style="color: var(--gold-300); font-weight: 700; font-size: 0.86rem;">No area selected</span>
+          </div>
+
+          <div class="config-row" style="margin-top: 0.5rem;">
+            <span class="config-label">Preservation Blend:</span>
+            <span style="color: #6ee7b7; font-weight: 700; font-size: 0.82rem;">Native Resolution Feathered</span>
+          </div>
+
+          <button id="restoreButton" class="btn-gold" style="width: 100%; margin-top: 1rem;" disabled>
+            <span>✨ Reconstruct Sculpture</span>
+          </button>
+        </div>
+
+        <!-- Progress Indicator -->
+        <div class="reconstruct-status-box" id="progressBox">
+          <div class="luxury-spinner"></div>
+          <div id="progressStep" style="font-family: var(--font-title); font-weight: 700; font-size: 1rem; color: var(--gold-300);">Reconstructing Stone Details...</div>
+          <p style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 0.4rem;">Applying material-aware texture synthesis</p>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Comparison Section -->
+    <section class="glass-luxury-panel comparison-stage-section" id="comparisonSection">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.2rem;">
+        <div>
+          <h2 style="font-family: var(--font-heritage); font-size: 1.8rem; color: var(--gold-300);">Sculpture Restoration Complete</h2>
+          <p style="color: var(--text-secondary); font-size: 0.95rem;">Examine the authentic historical restoration compared with the weathered artifact.</p>
+        </div>
+        <div style="display: flex; gap: 0.8rem; align-items: center; flex-wrap: wrap;">
+          <div style="display: flex; gap: 0.3rem; background: rgba(0,0,0,0.4); padding: 0.25rem; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.1);">
+            <button class="btn-glass active" id="sliderModeBtn" style="padding: 0.45rem 0.85rem; font-size: 0.82rem; font-weight: 700;">↔ Slider View</button>
+            <button class="btn-glass" id="sideModeBtn" style="padding: 0.45rem 0.85rem; font-size: 0.82rem; font-weight: 700;">⊞ Side-by-Side</button>
+          </div>
+          <button class="btn-glass" id="retrySeedBtn">
+            <span>🎲 New Variation</span>
+          </button>
+          <a id="downloadRestoredBtn" class="btn-gold" download="punara_vistara_restored.jpg">
+            <span>💾 Download Restored Image</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Slider Container -->
+      <div id="sliderViewBlock">
+        <div class="comparison-viewport" id="compWrapper">
+          <img id="restoredImgComp" class="comp-img" alt="Restored Artwork" />
+          <div class="comp-overlay" id="compOverlay">
+            <img id="origImgComp" alt="Original Damaged Artwork" />
+          </div>
+          <div class="comp-slider-handle" id="sliderHandle">↔</div>
+        </div>
+        <div class="comparison-legend" id="sliderLegend">
+          <span>← Original Weathered Relic</span>
+          <span>Restored Masterpiece →</span>
+        </div>
+      </div>
+
+      <!-- Side-by-side Dual Cards -->
+      <div id="sideBySideContainer" style="display: none; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.8rem; margin-top: 2rem; max-width: 1000px; margin-left: auto; margin-right: auto;">
+        <div style="background: rgba(0,0,0,0.5); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); overflow: hidden;">
+          <div style="padding: 0.85rem 1.2rem; background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.08); font-family: var(--font-title); font-size: 0.95rem; color: var(--gold-300); font-weight: 700;">
+            Original Damaged Artifact
+          </div>
+          <div style="padding: 1.2rem; display: flex; justify-content: center; align-items: center; background: #070a12; min-height: 340px;">
+            <img id="sideOrigComp" style="max-width: 100%; height: auto; max-height: 480px; object-fit: contain; border-radius: 6px; box-shadow: 0 10px 30px rgba(0,0,0,0.7);" alt="Original Relic" />
+          </div>
+        </div>
+
+        <div style="background: rgba(0,0,0,0.5); border: 1px solid var(--border-gold-glow); border-radius: var(--radius-md); overflow: hidden; box-shadow: 0 0 35px rgba(220, 160, 62, 0.15);">
+          <div style="padding: 0.85rem 1.2rem; background: rgba(220,160,62,0.1); border-bottom: 1px solid rgba(220,160,62,0.25); font-family: var(--font-title); font-size: 0.95rem; color: #fff; font-weight: 700;">
+            ✨ Restored Masterpiece
+          </div>
+          <div style="padding: 1.2rem; display: flex; justify-content: center; align-items: center; background: #070a12; min-height: 340px;">
+            <img id="sideRestoredComp" style="max-width: 100%; height: auto; max-height: 480px; object-fit: contain; border-radius: 6px; box-shadow: 0 10px 30px rgba(0,0,0,0.7);" alt="Restored Masterpiece" />
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <div class="footer-content">
+      <div class="footer-title">PUNARA VISTARA</div>
+      <div class="footer-subtitle">Rebuilding Ancient Monuments & Cultural Heritage</div>
+      <div class="footer-copy">© 2025 Punara Vistara Heritage Sanctuary. Dedicated to ancient civilizational preservation.</div>
+    </div>
+  </footer>
+
+  <script>
+    const canvas = document.getElementById('imageCanvas');
+    const ctx = canvas.getContext('2d');
+    const stage = document.getElementById('canvasStage');
+    const uploadOverlay = document.getElementById('uploadOverlay');
+    const imageInput = document.getElementById('imageInput');
+    const brushSizeInput = document.getElementById('brushSize');
+    const brushVal = document.getElementById('brushVal');
+    const brushToolBtn = document.getElementById('brushToolBtn');
+    const eraserToolBtn = document.getElementById('eraserToolBtn');
+    const undoBtn = document.getElementById('undoBtn');
+    const clearMaskBtn = document.getElementById('clearMaskBtn');
+    const uploadNewBtn = document.getElementById('uploadNewBtn');
+    const restoreBtn = document.getElementById('restoreButton');
+    const promptDesc = document.getElementById('promptDesc');
+    const maskStatusText = document.getElementById('maskStatusText');
+    const progressBox = document.getElementById('progressBox');
+    const progressStep = document.getElementById('progressStep');
+    const seedDisplay = document.getElementById('seedDisplay');
+    const rollSeedBtn = document.getElementById('rollSeedBtn');
+    const retrySeedBtn = document.getElementById('retrySeedBtn');
+    const loadSampleCholaBtn = document.getElementById('loadSampleCholaBtn');
+    const loadSampleHoysalaBtn = document.getElementById('loadSampleHoysalaBtn');
+
+    let currentTool = 'brush';
+    let isDrawing = false;
+    let baseImage = null;
+    let maskCanvas = document.createElement('canvas');
+    let maskCtx = maskCanvas.getContext('2d');
+    let maskPixelCount = 0;
+    let selectedMaterial = 'sandstone';
+    let currentSeed = -1;
+    let undoStack = []; // stores mask image data snapshots
+
+    function showToast(msg, icon = '🏛️') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.innerHTML = `<span>${icon}</span><span>${msg}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3500);
+    }
+
+    // Material selector handling
+    document.querySelectorAll('.mat-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.mat-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectedMaterial = btn.dataset.mat;
+        showToast(`Material set to ${btn.textContent.trim()}`, '🪨');
+      });
+    });
+
+    // Seed roll
+    function rollNewSeed() {
+      currentSeed = -1;
+      seedDisplay.textContent = 'Auto (Random)';
+      showToast('New random variation enabled', '🎲');
+    }
+    rollSeedBtn.addEventListener('click', rollNewSeed);
+    retrySeedBtn.addEventListener('click', () => {
+      rollNewSeed();
+      restoreBtn.click();
+    });
+
+    brushSizeInput.addEventListener('input', (e) => {
+      brushVal.textContent = e.target.value + 'px';
+    });
+
+    brushToolBtn.addEventListener('click', () => {
+      currentTool = 'brush';
+      brushToolBtn.classList.add('active');
+      eraserToolBtn.classList.remove('active');
+    });
+
+    eraserToolBtn.addEventListener('click', () => {
+      currentTool = 'eraser';
+      eraserToolBtn.classList.add('active');
+      brushToolBtn.classList.remove('active');
+    });
+
+    uploadNewBtn.addEventListener('click', () => imageInput.click());
+
+    function addTag(tag) {
+      if (!promptDesc.value.includes(tag)) {
+        promptDesc.value = promptDesc.value ? promptDesc.value + ', ' + tag : tag;
+      }
+    }
+
+    // Drag and Drop
+    ['dragenter', 'dragover'].forEach(name => {
+      stage.addEventListener(name, (e) => {
+        e.preventDefault();
+        stage.style.borderColor = 'var(--gold-400)';
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(name => {
+      stage.addEventListener(name, (e) => {
+        e.preventDefault();
+        stage.style.borderColor = '';
+      });
+    });
+
+    stage.addEventListener('drop', (e) => {
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        loadImageFromFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    imageInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) {
+        loadImageFromFile(e.target.files[0]);
+      }
+    });
+
+    function loadImageFromFile(file) {
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        const img = new Image();
+        img.onload = () => {
+          setupWorkspaceWithImage(img);
+          showToast('Relic image loaded. Brush over areas to restore.', '🎨');
+        };
+        img.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function generateRelicSample(type) {
+      const sCanvas = document.createElement('canvas');
+      sCanvas.width = 512;
+      sCanvas.height = 512;
+      const sCtx = sCanvas.getContext('2d');
+
+      if (type === 'chola') {
+        const grad = sCtx.createLinearGradient(0, 0, 512, 512);
+        grad.addColorStop(0, '#543d2b');
+        grad.addColorStop(0.5, '#3b2a1d');
+        grad.addColorStop(1, '#1e140d');
+        sCtx.fillStyle = grad;
+        sCtx.fillRect(0, 0, 512, 512);
+
+        sCtx.fillStyle = '#826042';
+        sCtx.beginPath();
+        sCtx.arc(256, 175, 80, 0, Math.PI * 2);
+        sCtx.fill();
+
+        sCtx.fillStyle = '#a67d55';
+        sCtx.fillRect(195, 245, 122, 220);
+
+        sCtx.strokeStyle = '#1a1007';
+        sCtx.lineWidth = 5;
+        sCtx.beginPath();
+        sCtx.moveTo(225, 145);
+        sCtx.lineTo(265, 225);
+        sCtx.lineTo(235, 320);
+        sCtx.stroke();
+
+        promptDesc.value = "Chola dynasty bronze sculpture with natural verdigris patina, intricate carved deity halo and smooth metallic finish";
+        document.querySelector('.mat-btn[data-mat="bronze"]').click();
+      } else {
+        const grad = sCtx.createLinearGradient(0, 0, 512, 512);
+        grad.addColorStop(0, '#3f454a');
+        grad.addColorStop(0.5, '#292d30');
+        grad.addColorStop(1, '#151719');
+        sCtx.fillStyle = grad;
+        sCtx.fillRect(0, 0, 512, 512);
+
+        sCtx.fillStyle = '#5c646b';
+        sCtx.fillRect(160, 140, 192, 280);
+
+        sCtx.fillStyle = '#7a858f';
+        sCtx.beginPath();
+        sCtx.arc(256, 180, 65, 0, Math.PI * 2);
+        sCtx.fill();
+
+        sCtx.strokeStyle = '#0e1012';
+        sCtx.lineWidth = 6;
+        sCtx.beginPath();
+        sCtx.moveTo(190, 170);
+        sCtx.lineTo(270, 260);
+        sCtx.stroke();
+
+        promptDesc.value = "Hoysala soapstone frieze carving with ornamental floral filigree, polished grey chloritic schist texture";
+        document.querySelector('.mat-btn[data-mat="sandstone"]').click();
+      }
+
+      const sampleImg = new Image();
+      sampleImg.onload = () => {
+        setupWorkspaceWithImage(sampleImg);
+        showToast('Sample relic loaded into studio!', '🏛️');
+      };
+      sampleImg.src = sCanvas.toDataURL('image/jpeg');
+    }
+
+    loadSampleCholaBtn.addEventListener('click', () => generateRelicSample('chola'));
+    loadSampleHoysalaBtn.addEventListener('click', () => generateRelicSample('hoysala'));
+
+    function setupWorkspaceWithImage(img) {
+      baseImage = img;
+      
+      let w = img.width;
+      let h = img.height;
+      const maxW = 880;
+      const maxH = 550;
+
+      if (w > maxW || h > maxH) {
+        const ratio = Math.min(maxW / w, maxH / h);
+        w = Math.round(w * ratio);
+        h = Math.round(h * ratio);
+      }
+
+      canvas.width = w;
+      canvas.height = h;
+      maskCanvas.width = w;
+      maskCanvas.height = h;
+
+      maskCtx.fillStyle = '#000000';
+      maskCtx.fillRect(0, 0, w, h);
+      undoStack = [];
+
+      uploadOverlay.style.display = 'none';
+      canvas.style.display = 'block';
+
+      redrawCanvas();
+      checkMaskStatus();
+    }
+
+    function redrawCanvas() {
+      if (!baseImage) return;
+
+      ctx.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
+
+      const maskData = maskCtx.getImageData(0, 0, canvas.width, canvas.height);
+      const overlayData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+      let markedCount = 0;
+      for (let i = 0; i < maskData.data.length; i += 4) {
+        if (maskData.data[i] > 100) {
+          markedCount++;
+          overlayData.data[i] = Math.round(overlayData.data[i] * 0.3 + 245 * 0.7);
+          overlayData.data[i+1] = Math.round(overlayData.data[i+1] * 0.3 + 207 * 0.7);
+          overlayData.data[i+2] = Math.round(overlayData.data[i+2] * 0.3 + 114 * 0.7);
+        }
+      }
+      ctx.putImageData(overlayData, 0, 0);
+      maskPixelCount = markedCount;
+    }
+
+    function checkMaskStatus() {
+      if (maskPixelCount > 80) {
+        maskStatusText.textContent = `${maskPixelCount.toLocaleString()} px isolated`;
+        maskStatusText.style.color = 'var(--gold-300)';
+        restoreBtn.disabled = false;
+      } else {
+        maskStatusText.textContent = 'No area selected';
+        maskStatusText.style.color = 'var(--text-muted)';
+        restoreBtn.disabled = true;
+      }
+    }
+
+    function getCanvasCoordinates(e) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      return {
+        x: (e.clientX - rect.left) * scaleX,
+        y: (e.clientY - rect.top) * scaleY
+      };
+    }
+
+    canvas.addEventListener('mousedown', (e) => {
+      if (!baseImage) return;
+      // Push snapshot to undo stack
+      if (undoStack.length >= 10) undoStack.shift();
+      undoStack.push(maskCtx.getImageData(0, 0, maskCanvas.width, maskCanvas.height));
+
+      isDrawing = true;
+      const { x, y } = getCanvasCoordinates(e);
+      paintOnMask(x, y, true);
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (isDrawing) {
+        isDrawing = false;
+        checkMaskStatus();
+      }
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      if (!isDrawing || !baseImage) return;
+      const { x, y } = getCanvasCoordinates(e);
+      paintOnMask(x, y, false);
+    });
+
+    let lastX = 0, lastY = 0;
+    function paintOnMask(x, y, isStart) {
+      const radius = parseInt(brushSizeInput.value, 10);
+      maskCtx.lineWidth = radius * 2;
+      maskCtx.lineCap = 'round';
+      maskCtx.lineJoin = 'round';
+
+      if (currentTool === 'brush') {
+        maskCtx.strokeStyle = '#ffffff';
+        maskCtx.fillStyle = '#ffffff';
+      } else {
+        maskCtx.strokeStyle = '#000000';
+        maskCtx.fillStyle = '#000000';
+      }
+
+      maskCtx.beginPath();
+      if (isStart) {
+        maskCtx.arc(x, y, radius, 0, Math.PI * 2);
+        maskCtx.fill();
+        lastX = x;
+        lastY = y;
+      } else {
+        maskCtx.moveTo(lastX, lastY);
+        maskCtx.lineTo(x, y);
+        maskCtx.stroke();
+        lastX = x;
+        lastY = y;
+      }
+
+      redrawCanvas();
+    }
+
+    undoBtn.addEventListener('click', () => {
+      if (!baseImage || undoStack.length === 0) return;
+      const previousState = undoStack.pop();
+      maskCtx.putImageData(previousState, 0, 0);
+      redrawCanvas();
+      checkMaskStatus();
+      showToast('Undid stroke', '↩');
+    });
+
+    clearMaskBtn.addEventListener('click', () => {
+      if (!baseImage) return;
+      if (undoStack.length >= 10) undoStack.shift();
+      undoStack.push(maskCtx.getImageData(0, 0, maskCanvas.width, maskCanvas.height));
+
+      maskCtx.fillStyle = '#000000';
+      maskCtx.fillRect(0, 0, maskCanvas.width, maskCanvas.height);
+      redrawCanvas();
+      checkMaskStatus();
+      showToast('Mask cleared', '🧹');
+    });
+
+    let originalRelicDataUrl = null;
+    let restoredRelicDataUrl = null;
+    let currentDisplayMode = 'original';
+    const viewToggleCluster = document.getElementById('viewToggleCluster');
+    const toggleViewBtn = document.getElementById('toggleViewBtn');
+    const toggleViewText = document.getElementById('toggleViewText');
+    const sliderModeBtn = document.getElementById('sliderModeBtn');
+    const sideModeBtn = document.getElementById('sideModeBtn');
+    const sliderViewBlock = document.getElementById('sliderViewBlock');
+    const sideBySideContainer = document.getElementById('sideBySideContainer');
+    const sideOrigComp = document.getElementById('sideOrigComp');
+    const sideRestoredComp = document.getElementById('sideRestoredComp');
+
+    // Canvas Toggle Button (Restored vs Original)
+    toggleViewBtn.addEventListener('click', () => {
+      if (!originalRelicDataUrl || !restoredRelicDataUrl) return;
+      const imgToRender = new Image();
+      if (currentDisplayMode === 'restored') {
+        currentDisplayMode = 'original';
+        toggleViewText.textContent = 'Viewing Original Damaged';
+        toggleViewBtn.style.background = 'rgba(255, 255, 255, 0.08)';
+        toggleViewBtn.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+        toggleViewBtn.style.color = 'var(--text-secondary)';
+        imgToRender.onload = () => {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(imgToRender, 0, 0, canvas.width, canvas.height);
+          showToast('Showing original weathered relic', '🏛️');
+        };
+        imgToRender.src = originalRelicDataUrl;
+      } else {
+        currentDisplayMode = 'restored';
+        toggleViewText.textContent = 'Viewing Restored Artwork';
+        toggleViewBtn.style.background = 'rgba(16, 185, 129, 0.15)';
+        toggleViewBtn.style.borderColor = '#34d399';
+        toggleViewBtn.style.color = '#6ee7b7';
+        imgToRender.onload = () => {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(imgToRender, 0, 0, canvas.width, canvas.height);
+          showToast('Showing restored artwork on canvas', '✨');
+        };
+        imgToRender.src = restoredRelicDataUrl;
+      }
+    });
+
+    // Comparison View Mode Switching (Slider vs Side-by-Side)
+    sliderModeBtn.addEventListener('click', () => {
+      sliderModeBtn.classList.add('active');
+      sideModeBtn.classList.remove('active');
+      sliderViewBlock.style.display = 'block';
+      sideBySideContainer.style.display = 'none';
+      initSlider();
+    });
+
+    sideModeBtn.addEventListener('click', () => {
+      sideModeBtn.classList.add('active');
+      sliderModeBtn.classList.remove('active');
+      sliderViewBlock.style.display = 'none';
+      sideBySideContainer.style.display = 'grid';
+    });
+
+    restoreBtn.addEventListener('click', async () => {
+      if (!baseImage || maskPixelCount < 10) return;
+
+      restoreBtn.disabled = true;
+      progressBox.classList.add('active');
+      progressStep.textContent = "Analyzing selected regions...";
+
+      let elapsedSeconds = 0;
+      const progressTimer = setInterval(() => {
+        elapsedSeconds++;
+        progressStep.textContent = `Reconstructing authentic stone details... (${elapsedSeconds}s / ~40s)`;
+      }, 1000);
+
+      try {
+        const tempImageCanvas = document.createElement('canvas');
+        tempImageCanvas.width = canvas.width;
+        tempImageCanvas.height = canvas.height;
+        const tempCtx = tempImageCanvas.getContext('2d');
+        tempCtx.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
+
+        const imageBase64 = tempImageCanvas.toDataURL('image/jpeg', 0.95).split(',')[1];
+        const maskBase64 = maskCanvas.toDataURL('image/png').split(',')[1];
+
+        const response = await fetch('/api/inpaint', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            image_base64: imageBase64,
+            mask_base64: maskBase64,
+            description: promptDesc.value.trim(),
+            material: selectedMaterial,
+            seed: currentSeed,
+            steps: 10,
+            guidance: 8.0
+          })
+        });
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.error || 'Unable to process restoration');
+        }
+
+        const data = await response.json();
+        if (data.status === 'success' && data.reconstructed_image_base64) {
+          if (data.seed !== undefined) {
+            seedDisplay.textContent = `#${data.seed}`;
+            currentSeed = data.seed;
+          }
+
+          const origDataUrl = tempImageCanvas.toDataURL('image/jpeg', 0.95);
+          const restoredDataUrl = 'data:image/jpeg;base64,' + data.reconstructed_image_base64;
+
+          // 1. Immediately paint restored image onto the main canvas!
+          const restoredImgObj = new Image();
+          restoredImgObj.onload = () => {
+            originalRelicDataUrl = origDataUrl;
+            restoredRelicDataUrl = restoredDataUrl;
+            currentDisplayMode = 'restored';
+            baseImage = restoredImgObj;
+
+            // Clear the drawn mask
+            maskCtx.fillStyle = '#000000';
+            maskCtx.fillRect(0, 0, maskCanvas.width, maskCanvas.height);
+            maskPixelCount = 0;
+            maskStatusText.textContent = "Sculpture restored";
+            maskStatusText.style.color = "#34d399";
+            undoStack = [];
+
+            // Draw clean restored image onto studio canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(restoredImgObj, 0, 0, canvas.width, canvas.height);
+
+            // Display view toggle button on toolbar
+            viewToggleCluster.style.display = 'flex';
+            toggleViewText.textContent = 'Viewing Restored Artwork';
+            toggleViewBtn.style.background = 'rgba(16, 185, 129, 0.15)';
+            toggleViewBtn.style.borderColor = '#34d399';
+            toggleViewBtn.style.color = '#6ee7b7';
+
+            // 2. Display comparison section below
+            displayRestorationResult(origDataUrl, restoredDataUrl);
+            showToast('Artifact restoration complete and rendered!', '✨');
+          };
+          restoredImgObj.src = restoredDataUrl;
+
+        } else {
+          throw new Error('Unable to generate reconstructed image');
+        }
+
+      } catch (err) {
+        console.error(err);
+        showToast('Restoration could not be completed. Please try again.', '⚠️');
+      } finally {
+        clearInterval(progressTimer);
+        progressBox.classList.remove('active');
+        restoreBtn.disabled = false;
+      }
+    });
+
+    function displayRestorationResult(origSrc, restoredSrc) {
+      const section = document.getElementById('comparisonSection');
+      const origComp = document.getElementById('origImgComp');
+      const restoredComp = document.getElementById('restoredImgComp');
+      const downloadBtn = document.getElementById('downloadRestoredBtn');
+
+      origComp.src = origSrc;
+      restoredComp.src = restoredSrc;
+      sideOrigComp.src = origSrc;
+      sideRestoredComp.src = restoredSrc;
+      downloadBtn.href = restoredSrc;
+
+      section.classList.add('show');
+      section.scrollIntoView({ behavior: 'smooth' });
+
+      restoredComp.onload = () => {
+        initSlider();
+      };
+      // Trigger slider layout calculation
+      initSlider();
+    }
+
+    function initSlider() {
+      const wrapper = document.getElementById('compWrapper');
+      const overlay = document.getElementById('compOverlay');
+      const handle = document.getElementById('sliderHandle');
+      const origImg = document.getElementById('origImgComp');
+
+      if (!wrapper || !overlay || !handle || !origImg) return;
+
+      function updateSlider(xPos) {
+        const rect = wrapper.getBoundingClientRect();
+        if (rect.width === 0) return;
+        let pos = ((xPos - rect.left) / rect.width) * 100;
+        pos = Math.max(0, Math.min(100, pos));
+
+        overlay.style.width = pos + '%';
+        handle.style.left = pos + '%';
+        origImg.style.width = wrapper.offsetWidth + 'px';
+      }
+
+      let isSliding = false;
+      wrapper.onmousedown = (e) => {
+        isSliding = true;
+        updateSlider(e.clientX);
+      };
+
+      window.onmouseup = () => { isSliding = false; };
+      window.onmousemove = (e) => {
+        if (!isSliding) return;
+        updateSlider(e.clientX);
+      };
+
+      // Touch screen support
+      wrapper.ontouchstart = (e) => {
+        if (e.touches && e.touches[0]) {
+          isSliding = true;
+          updateSlider(e.touches[0].clientX);
+        }
+      };
+      window.ontouchend = () => { isSliding = false; };
+      window.ontouchmove = (e) => {
+        if (!isSliding || !e.touches || !e.touches[0]) return;
+        updateSlider(e.touches[0].clientX);
+      };
+
+      origImg.style.width = (wrapper.offsetWidth || 700) + 'px';
+      setTimeout(() => {
+        if (wrapper.offsetWidth) {
+          origImg.style.width = wrapper.offsetWidth + 'px';
+        }
+      }, 150);
+    }
+  </script>
+</body>
+</html>

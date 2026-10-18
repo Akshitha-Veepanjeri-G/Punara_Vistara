@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Epigraphy Reader | PUNARA VISTARA</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}" />
+  <style>
+    .studio-container {
+      max-width: 1400px;
+      margin: 2.5rem auto;
+      padding: 0 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .studio-top-bar {
+      margin-bottom: 2.2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+    }
+
+    .studio-title-group h1 {
+      font-family: var(--font-heritage);
+      font-size: 2.6rem;
+      font-weight: 800;
+      color: var(--text-pure);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: linear-gradient(135deg, #ffffff 30%, #a7f3d0 70%, var(--emerald-400) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .studio-title-group p {
+      color: var(--text-secondary);
+      font-size: 1rem;
+      margin-top: 0.4rem;
+    }
+
+    .sample-presets-group {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .preset-emerald-btn {
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+      color: #6ee7b7;
+      padding: 0.55rem 1.1rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: var(--transition-smooth);
+    }
+
+    .preset-emerald-btn:hover {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: var(--emerald-400);
+      transform: translateY(-2px);
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+    }
+
+    /* Layout Grid */
+    .epigraphy-grid {
+      display: grid;
+      grid-template-columns: 500px 1fr;
+      gap: 2.4rem;
+      align-items: start;
+    }
+
+    @media (max-width: 1100px) {
+      .epigraphy-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Left Ingestion Card */
+    .ingest-card {
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.4rem;
+    }
+
+    .luxury-dropzone {
+      position: relative;
+      background: radial-gradient(circle at 50% 50%, #0c121d 0%, #05070d 100%);
+      border: 2px dashed rgba(52, 211, 153, 0.35);
+      border-radius: var(--radius-md);
+      min-height: 380px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2.5rem;
+      text-align: center;
+      cursor: pointer;
+      overflow: hidden;
+      transition: var(--transition-smooth);
+      box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.8);
+    }
+
+    .luxury-dropzone:hover, .luxury-dropzone.dragover {
+      border-color: var(--emerald-400);
+      background: radial-gradient(circle at 50% 50%, #101c2c 0%, #05070d 100%);
+      box-shadow: 0 0 30px rgba(16, 185, 129, 0.2), inset 0 0 30px rgba(0, 0, 0, 0.8);
+    }
+
+    .luxury-dropzone.has-file {
+      border-style: solid;
+      border-color: var(--emerald-400);
+      padding: 0;
+    }
+
+    .dropzone-crest {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(52, 211, 153, 0.2) 0%, rgba(5, 150, 105, 0.08) 80%);
+      border: 1px solid var(--emerald-400);
+      color: #6ee7b7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+      margin-bottom: 1.2rem;
+      box-shadow: 0 0 25px rgba(16, 185, 129, 0.25);
+      transition: var(--transition-smooth);
+    }
+
+    .luxury-dropzone:hover .dropzone-crest {
+      transform: scale(1.08);
+      box-shadow: 0 0 40px rgba(16, 185, 129, 0.4);
+    }
+
+    #previewImage {
+      width: 100%;
+      max-height: 520px;
+      object-fit: contain;
+      display: none;
+      background: #000;
+    }
+
+    .file-tag-pill {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1.2rem;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius-sm);
+      font-size: 0.86rem;
+      color: var(--text-secondary);
+    }
+
+    .file-tag-pill.show {
+      display: flex;
+    }
+
+    /* Scanning Hologram Overlay */
+    .scanning-hologram {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(5, 7, 13, 0.82);
+      backdrop-filter: blur(8px);
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 1.2rem;
+      z-index: 20;
+    }
+
+    .scanning-hologram.active {
+      display: flex;
+    }
+
+    .emerald-laser-sweep {
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #34d399, transparent);
+      box-shadow: 0 0 20px #34d399, 0 0 35px #10b981;
+      position: absolute;
+      animation: sweepLaser 2s infinite ease-in-out;
+    }
+
+    @keyframes sweepLaser {
+      0% { top: 0%; opacity: 0; }
+      15% { opacity: 1; }
+      85% { opacity: 1; }
+      100% { top: 100%; opacity: 0; }
+    }
+
+    /* Right: Epigraphy Dashboard */
+    .dashboard-card {
+      padding: 2.2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.8rem;
+    }
+
+    .manuscript-box {
+      background: rgba(7, 11, 19, 0.85);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      transition: var(--transition-smooth);
+    }
+
+    .manuscript-box:hover {
+      border-color: rgba(245, 207, 114, 0.35);
+    }
+
+    .manuscript-box-emerald {
+      border-color: rgba(52, 211, 153, 0.25);
+    }
+
+    .manuscript-box-emerald:hover {
+      border-color: var(--emerald-400);
+    }
+
+    .box-header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.95rem 1.4rem;
+      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .box-heading-text {
+      font-family: var(--font-title);
+      font-size: 1.15rem;
+      color: var(--text-pure);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .action-badge-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-secondary);
+      padding: 0.4rem 0.85rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      transition: var(--transition-smooth);
+    }
+
+    .action-badge-btn:hover {
+      background: rgba(220, 160, 62, 0.15);
+      border-color: var(--gold-400);
+      color: #fff;
+    }
+
+    .action-badge-btn.emerald:hover {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: var(--emerald-400);
+      color: #6ee7b7;
+    }
+
+    .manuscript-scroll-view {
+      padding: 1.4rem;
+      min-height: 160px;
+      color: var(--text-primary);
+      font-size: 1.05rem;
+      line-height: 1.85;
+      white-space: pre-wrap;
+      overflow-y: auto;
+      max-height: 280px;
+    }
+
+    .manuscript-scroll-view.empty {
+      color: var(--text-muted);
+      font-style: italic;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.95rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient Light Orbs -->
+  <div class="ambient-glow-orbs">
+    <div class="glow-orb-1"></div>
+    <div class="glow-orb-2"></div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="navbar">
+    <a href="/" class="nav-brand">
+      <div class="brand-emblem">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <div class="brand-info">
+        <span class="brand-name">PUNARA VISTARA</span>
+        <span class="brand-tagline">पुनर विस्तार • Heritage Sanctuary</span>
+      </div>
+    </a>
+    <ul class="nav-menu">
+      <li><a href="/" class="nav-item-link">Overview</a></li>
+      <li><a href="/restoration" class="nav-item-link">Restoration Studio</a></li>
+      <li><a href="/ocr" class="nav-item-link active">Epigraphy Reader</a></li>
+      <li>
+        <div class="system-pill">
+          <span class="pulse-dot"></span>
+          <span>Active</span>
+        </div>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Studio Container -->
+  <main class="studio-container">
+    <div class="studio-top-bar">
+      <div class="studio-title-group">
+        <h1>Epigraphy Reader & Translation</h1>
+        <p>Extract ancient characters from stone edicts, copper plates, or palm leaves and receive scholarly modern English translations.</p>
+      </div>
+
+      <div class="sample-presets-group">
+        <button class="preset-emerald-btn" id="loadSampleRoyalBtn">
+          <span>📜</span>
+          <span>Load Royal Charter Inscription</span>
+        </button>
+        <button class="preset-emerald-btn" id="loadSampleBrahmiBtn">
+          <span>🪨</span>
+          <span>Load Rock Edict Sample</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Hidden file input -->
+    <input type="file" id="imageInput" accept="image/*" style="display: none;" />
+
+    <div class="epigraphy-grid">
+      <!-- Left: Ingestion & Capture Preview -->
+      <section class="glass-luxury-panel ingest-card">
+        <div class="luxury-dropzone" id="dropzone">
+          <div class="scanning-hologram" id="scanningOverlay">
+            <div class="emerald-laser-sweep"></div>
+            <div class="pulse-dot" style="width: 16px; height: 16px;"></div>
+            <div style="font-family: var(--font-title); font-weight: 700; color: #6ee7b7; font-size: 1.15rem;">Deciphering Inscription Glyphs...</div>
+            <div style="font-size: 0.85rem; color: var(--text-secondary);">Analyzing character geometry and historical semantics</div>
+          </div>
+
+          <div id="dropzoneContent">
+            <div class="dropzone-crest">📜</div>
+            <h3 style="font-family: var(--font-title); font-size: 1.3rem; margin-bottom: 0.5rem; color: #fff;">Upload Historical Inscription</h3>
+            <p style="color: var(--text-secondary); font-size: 0.92rem; margin-bottom: 1.5rem;">Drag & drop stone rubbing or manuscript capture</p>
+            <button class="btn-gold btn-emerald" onclick="document.getElementById('imageInput').click();">
+              <span>Select Inscription Image</span>
+            </button>
+          </div>
+
+          <img id="previewImage" alt="Inscription Preview" />
+        </div>
+
+        <div class="file-tag-pill" id="fileMetaPill">
+          <span id="fileName" style="font-weight: 600; color: #fff;">sample_inscription.jpg</span>
+          <button class="action-badge-btn" id="removeFileBtn">✕ Change</button>
+        </div>
+
+        <button id="processBtn" class="btn-gold btn-emerald" style="width: 100%;" disabled>
+          <span>🔍 Decipher & Translate</span>
+        </button>
+      </section>
+
+      <!-- Right: Structured Text & Translation Dashboard -->
+      <section class="glass-luxury-panel dashboard-card">
+        <!-- Raw Script Card -->
+        <div class="manuscript-box">
+          <div class="box-header-bar">
+            <div class="box-heading-text">
+              <span>🪨</span>
+              <span>Extracted Script (Original Characters)</span>
+            </div>
+            <div style="display: flex; gap: 0.6rem; align-items: center;">
+              <span id="charCount" style="font-size: 0.78rem; color: var(--gold-300); font-family: var(--font-mono); font-weight: 700;">0 chars</span>
+              <button class="action-badge-btn" id="copyRawBtn" title="Copy raw text">
+                <span>📋 Copy</span>
+              </button>
+            </div>
+          </div>
+          <div id="rawTextOutput" class="manuscript-scroll-view empty">
+            Awaiting inscription image upload and analysis...
+          </div>
+        </div>
+
+        <!-- English Translation Card -->
+        <div class="manuscript-box manuscript-box-emerald">
+          <div class="box-header-bar" style="background: rgba(16, 185, 129, 0.04);">
+            <div class="box-heading-text" style="color: #6ee7b7;">
+              <span>🌐</span>
+              <span>Scholarly Modern English Translation</span>
+            </div>
+            <div style="display: flex; gap: 0.6rem; align-items: center;">
+              <button class="action-badge-btn emerald" id="speakBtn" title="Read aloud translation">
+                <span>🔊 Read Aloud</span>
+              </button>
+              <button class="action-badge-btn emerald" id="copyTransBtn" title="Copy translation">
+                <span>📋 Copy</span>
+              </button>
+            </div>
+          </div>
+          <div id="translationOutput" class="manuscript-scroll-view empty" style="font-size: 1.08rem; color: #f1f5f9;">
+            Historical English translation will be revealed here...
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <div class="footer-content">
+      <div class="footer-title">PUNARA VISTARA</div>
+      <div class="footer-subtitle">पुनर विस्तार • Honoring and Deciphering the Past</div>
+      <div class="footer-copy">© 2025 Punara Vistara Heritage Sanctuary. Dedicated to ancient civilizational preservation.</div>
+    </div>
+  </footer>
+
+  <script>
+    const dropzone = document.getElementById('dropzone');
+    const dropzoneContent = document.getElementById('dropzoneContent');
+    const imageInput = document.getElementById('imageInput');
+    const previewImage = document.getElementById('previewImage');
+    const fileMetaPill = document.getElementById('fileMetaPill');
+    const fileNameSpan = document.getElementById('fileName');
+    const removeFileBtn = document.getElementById('removeFileBtn');
+    const processBtn = document.getElementById('processBtn');
+    const scanningOverlay = document.getElementById('scanningOverlay');
+    const rawTextOutput = document.getElementById('rawTextOutput');
+    const translationOutput = document.getElementById('translationOutput');
+    const charCount = document.getElementById('charCount');
+    const copyRawBtn = document.getElementById('copyRawBtn');
+    const copyTransBtn = document.getElementById('copyTransBtn');
+    const speakBtn = document.getElementById('speakBtn');
+    const loadSampleRoyalBtn = document.getElementById('loadSampleRoyalBtn');
+    const loadSampleBrahmiBtn = document.getElementById('loadSampleBrahmiBtn');
+
+    let currentBase64 = null;
+    let currentMimeType = 'image/jpeg';
+
+    function showToast(msg, icon = '📜') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.innerHTML = `<span>${icon}</span><span>${msg}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3500);
+    }
+
+    ['dragenter', 'dragover'].forEach(evt => {
+      dropzone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropzone.classList.add('dragover');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach(evt => {
+      dropzone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('dragover');
+      });
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        handleFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    imageInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) {
+        handleFile(e.target.files[0]);
+      }
+    });
+
+    function handleFile(file) {
+      currentMimeType = 'image/jpeg';
+      fileNameSpan.textContent = file.name;
+      fileMetaPill.classList.add('show');
+
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        const img = new Image();
+        img.onload = () => {
+          // Downsample high-res photos to max 1600px for instant upload
+          const maxDim = 1600;
+          let w = img.width;
+          let h = img.height;
+          if (w > maxDim || h > maxDim) {
+            const ratio = maxDim / Math.max(w, h);
+            w = Math.round(w * ratio);
+            h = Math.round(h * ratio);
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.92);
+          previewImage.src = compressedDataUrl;
+          previewImage.style.display = 'block';
+          dropzoneContent.style.display = 'none';
+          dropzone.classList.add('has-file');
+
+          currentBase64 = compressedDataUrl.split(',')[1];
+          currentMimeType = 'image/jpeg';
+          processBtn.disabled = false;
+          showToast('Inscription image loaded and optimized. Ready to decipher!', '🔍');
+        };
+        img.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    removeFileBtn.addEventListener('click', () => {
+      previewImage.style.display = 'none';
+      dropzoneContent.style.display = 'flex';
+      dropzone.classList.remove('has-file');
+      fileMetaPill.classList.remove('show');
+      processBtn.disabled = true;
+      currentBase64 = null;
+      imageInput.value = '';
+    });
+
+    function generateSampleInscription(type) {
+      const sCanvas = document.createElement('canvas');
+      sCanvas.width = 650;
+      sCanvas.height = 380;
+      const ctx = sCanvas.getContext('2d');
+
+      ctx.fillStyle = '#171b22';
+      ctx.fillRect(0, 0, 650, 380);
+
+      // Fine granite stone texture
+      for (let i = 0; i < 5000; i++) {
+        ctx.fillStyle = Math.random() > 0.5 ? '#272d38' : '#11141a';
+        ctx.fillRect(Math.random() * 650, Math.random() * 380, 2, 2);
+      }
+
+      ctx.fillStyle = '#f5cf72';
+      ctx.textAlign = 'center';
+
+      if (type === 'royal') {
+        ctx.font = '30px serif';
+        ctx.fillText("॥ ॐ स्वस्ति श्री विजयोत्कर्षः ॥", 325, 120);
+        ctx.font = '22px serif';
+        ctx.fillText("समस्त भुवन राजाधिराज परमेश्वर परमभट्टारक", 325, 190);
+        ctx.fillText("धर्मराज्य प्रतिष्ठापनार्थे दत्तं महादानम् ॥", 325, 250);
+        fileNameSpan.textContent = 'royal_charter_granite.jpg';
+      } else {
+        ctx.font = '28px serif';
+        ctx.fillText("देवानंपियेन पियदसिना लाजिना इयं धंमलिपि लिखापिता", 325, 130);
+        ctx.font = '22px serif';
+        ctx.fillText("हिदा न किंचि जीवं आरभित्पा पवतव्यं", 325, 200);
+        ctx.fillText("सवे मुनिसे पजा ममा ॥", 325, 260);
+        fileNameSpan.textContent = 'ashokan_rock_edict.jpg';
+      }
+
+      const dataUrl = sCanvas.toDataURL('image/jpeg');
+      previewImage.src = dataUrl;
+      previewImage.style.display = 'block';
+      dropzoneContent.style.display = 'none';
+      dropzone.classList.add('has-file');
+      fileMetaPill.classList.add('show');
+
+      currentBase64 = dataUrl.split(',')[1];
+      currentMimeType = 'image/jpeg';
+      processBtn.disabled = false;
+      showToast('Sample inscription loaded into studio!', '📜');
+    }
+
+    loadSampleRoyalBtn.addEventListener('click', () => generateSampleInscription('royal'));
+    loadSampleBrahmiBtn.addEventListener('click', () => generateSampleInscription('brahmi'));
+
+    processBtn.addEventListener('click', async () => {
+      if (!currentBase64) return;
+
+      processBtn.disabled = true;
+      scanningOverlay.classList.add('active');
+      rawTextOutput.textContent = 'Transcribing glyph contours...';
+      rawTextOutput.classList.remove('empty');
+      translationOutput.textContent = 'Formulating nuanced English translation...';
+      translationOutput.classList.remove('empty');
+
+      try {
+        const response = await fetch('/process', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            image: currentBase64,
+            mime_type: currentMimeType
+          })
+        });
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}));
+          throw new Error(errData.error || 'Unable to decipher inscription');
+        }
+
+        const data = await response.json();
+        const text = (data.text || data.raw_text || '').trim() || 'No visible glyphs recognized.';
+        const translation = (data.translation || data.english_translation || data.meaning || '').trim() || 'Translation unavailable for current transcription.';
+
+        rawTextOutput.textContent = text;
+        rawTextOutput.classList.remove('empty');
+        translationOutput.textContent = translation;
+        translationOutput.classList.remove('empty');
+        charCount.textContent = `${text.length.toLocaleString()} chars`;
+
+        showToast('Transcription & Translation complete!', '✨');
+      } catch (err) {
+        console.error(err);
+        rawTextOutput.textContent = 'Analysis could not discern text. Please ensure the inscription surface is well-lit and try again.';
+        rawTextOutput.classList.remove('empty');
+        translationOutput.textContent = 'Scholarly English translation will be revealed once text is discerned.';
+        translationOutput.classList.remove('empty');
+        showToast('Recognition could not be completed. Please try again.', '⚠️');
+      } finally {
+        scanningOverlay.classList.remove('active');
+        processBtn.disabled = false;
+      }
+    });
+
+    copyRawBtn.addEventListener('click', () => {
+      const text = rawTextOutput.textContent.trim();
+      if (!text || rawTextOutput.classList.contains('empty')) return;
+      navigator.clipboard.writeText(text);
+      showToast('Original script copied to clipboard!', '📋');
+    });
+
+    copyTransBtn.addEventListener('click', () => {
+      const text = translationOutput.textContent.trim();
+      if (!text || translationOutput.classList.contains('empty')) return;
+      navigator.clipboard.writeText(text);
+      showToast('English translation copied to clipboard!', '📋');
+    });
+
+    speakBtn.addEventListener('click', () => {
+      const text = translationOutput.textContent.trim();
+      if (!text || translationOutput.classList.contains('empty')) return;
+
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 0.92;
+        utterance.pitch = 1.0;
+        window.speechSynthesis.speak(utterance);
+        showToast('Reciting translation aloud...', '🔊');
+      } else {
+        showToast('Audio narration not supported in this browser', '⚠️');
+      }
+    });
+  </script>
+</body>
+</html>
