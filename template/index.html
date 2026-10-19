@@ -672,6 +672,9 @@
           <button id="restoreButton" class="btn-gold" style="width: 100%; margin-top: 1rem;" disabled>
             <span>✨ Reconstruct Sculpture</span>
           </button>
+          <button id="retrySidebarBtn" class="btn-glass" style="width: 100%; margin-top: 0.6rem; display: none; border-color: var(--gold-400); color: var(--gold-300);">
+            <span>🔄 Retry Restoration (New Seed)</span>
+          </button>
         </div>
 
         <!-- Progress Indicator -->
@@ -695,8 +698,11 @@
             <button class="btn-glass active" id="sliderModeBtn" style="padding: 0.45rem 0.85rem; font-size: 0.82rem; font-weight: 700;">↔ Slider View</button>
             <button class="btn-glass" id="sideModeBtn" style="padding: 0.45rem 0.85rem; font-size: 0.82rem; font-weight: 700;">⊞ Side-by-Side</button>
           </div>
-          <button class="btn-glass" id="retrySeedBtn">
-            <span>🎲 New Variation</span>
+          <button class="btn-glass" id="retrySeedBtn" title="Re-run restoration with a different random variation seed">
+            <span>🎲 Retry (New Variation)</span>
+          </button>
+          <button class="btn-glass" id="reEditMaskBtn" title="Restore original relic and mask to adjust brush/prompt and re-run">
+            <span>↩ Modify & Retry</span>
           </button>
           <a id="downloadRestoredBtn" class="btn-gold" download="punara_vistara_restored.jpg">
             <span>💾 Download Restored Image</span>
@@ -1163,10 +1169,18 @@
       sideBySideContainer.style.display = 'grid';
     });
 
-    restoreBtn.addEventListener('click', async () => {
-      if (!baseImage || maskPixelCount < 10) return;
+    let lastOriginalDataUrl = null;
+    let lastOriginalImageObj = null;
+    let lastMaskDataUrl = null;
+    let lastMaskPixelCount = 0;
+    const retrySidebarBtn = document.getElementById('retrySidebarBtn');
+    const retrySeedBtn = document.getElementById('retrySeedBtn');
+    const reEditMaskBtn = document.getElementById('reEditMaskBtn');
 
+    async function runInpaintPipeline(imgBase64, mskBase64, seedToUse, origDataUrl) {
       restoreBtn.disabled = true;
+      if (retrySidebarBtn) retrySidebarBtn.disabled = true;
+      if (retrySeedBtn) retrySeedBtn.disabled = true;
       progressBox.classList.add('active');
       progressStep.textContent = "Analyzing selected regions...";
 
@@ -1177,24 +1191,15 @@
       }, 1000);
 
       try {
-        const tempImageCanvas = document.createElement('canvas');
-        tempImageCanvas.width = canvas.width;
-        tempImageCanvas.height = canvas.height;
-        const tempCtx = tempImageCanvas.getContext('2d');
-        tempCtx.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
-
-        const imageBase64 = tempImageCanvas.toDataURL('image/jpeg', 0.95).split(',')[1];
-        const maskBase64 = maskCanvas.toDataURL('image/png').split(',')[1];
-
         const response = await fetch('/api/inpaint', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            image_base64: imageBase64,
-            mask_base64: maskBase64,
+            image_base64: imgBase64,
+            mask_base64: mskBase64,
             description: promptDesc.value.trim(),
             material: selectedMaterial,
-            seed: currentSeed,
+            seed: seedToUse,
             steps: 10,
             guidance: 8.0
           })
@@ -1212,10 +1217,8 @@
             currentSeed = data.seed;
           }
 
-          const origDataUrl = tempImageCanvas.toDataURL('image/jpeg', 0.95);
           const restoredDataUrl = 'data:image/jpeg;base64,' + data.reconstructed_image_base64;
 
-          // 1. Immediately paint restored image onto the main canvas!
           const restoredImgObj = new Image();
           restoredImgObj.onload = () => {
             originalRelicDataUrl = origDataUrl;
@@ -1223,7 +1226,7 @@
             currentDisplayMode = 'restored';
             baseImage = restoredImgObj;
 
-            // Clear the drawn mask
+            // Clear active mask on canvas
             maskCtx.fillStyle = '#000000';
             maskCtx.fillRect(0, 0, maskCanvas.width, maskCanvas.height);
             maskPixelCount = 0;
@@ -1235,14 +1238,15 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.drawImage(restoredImgObj, 0, 0, canvas.width, canvas.height);
 
-            // Display view toggle button on toolbar
+            // Display view toggle & retry buttons
             viewToggleCluster.style.display = 'flex';
             toggleViewText.textContent = 'Viewing Restored Artwork';
             toggleViewBtn.style.background = 'rgba(16, 185, 129, 0.15)';
             toggleViewBtn.style.borderColor = '#34d399';
             toggleViewBtn.style.color = '#6ee7b7';
+            if (retrySidebarBtn) retrySidebarBtn.style.display = 'block';
 
-            // 2. Display comparison section below
+            // Display comparison section below
             displayRestorationResult(origDataUrl, restoredDataUrl);
             showToast('Artifact restoration complete and rendered!', '✨');
           };
@@ -1254,13 +1258,83 @@
 
       } catch (err) {
         console.error(err);
-        showToast('Restoration could not be completed. Please try again.', '⚠️');
+        showToast('Restoration error: ' + (err.message || 'Please retry.'), '⚠️');
       } finally {
         clearInterval(progressTimer);
         progressBox.classList.remove('active');
         restoreBtn.disabled = false;
+        if (retrySidebarBtn) retrySidebarBtn.disabled = false;
+        if (retrySeedBtn) retrySeedBtn.disabled = false;
       }
+    }
+
+    restoreBtn.addEventListener('click', async () => {
+      if (!baseImage || maskPixelCount < 10) return;
+
+      const tempImageCanvas = document.createElement('canvas');
+      tempImageCanvas.width = canvas.width;
+      tempImageCanvas.height = canvas.height;
+      const tempCtx = tempImageCanvas.getContext('2d');
+      tempCtx.drawImage(baseImage, 0, 0, canvas.width, canvas.height);
+
+      const origDataUrl = tempImageCanvas.toDataURL('image/jpeg', 0.95);
+      const imgB64 = origDataUrl.split(',')[1];
+      const mskDataUrl = maskCanvas.toDataURL('image/png');
+      const mskB64 = mskDataUrl.split(',')[1];
+
+      // Cache state for retrying
+      lastOriginalDataUrl = origDataUrl;
+      lastOriginalImageObj = baseImage;
+      lastMaskDataUrl = mskDataUrl;
+      lastMaskPixelCount = maskPixelCount;
+
+      await runInpaintPipeline(imgB64, mskB64, currentSeed, origDataUrl);
     });
+
+    function triggerRetryWithNewSeed() {
+      if (!lastOriginalDataUrl || !lastMaskDataUrl) {
+        showToast('No active image & mask available to retry', '⚠️');
+        return;
+      }
+      currentSeed = Math.floor(Math.random() * 2147483647);
+      seedDisplay.textContent = '#' + currentSeed;
+      showToast(`Generating new restoration variation (#${currentSeed})...`, '🎲');
+
+      const imgB64 = lastOriginalDataUrl.split(',')[1];
+      const mskB64 = lastMaskDataUrl.split(',')[1];
+      runInpaintPipeline(imgB64, mskB64, currentSeed, lastOriginalDataUrl);
+    }
+
+    if (retrySeedBtn) {
+      retrySeedBtn.addEventListener('click', triggerRetryWithNewSeed);
+    }
+
+    if (retrySidebarBtn) {
+      retrySidebarBtn.addEventListener('click', triggerRetryWithNewSeed);
+    }
+
+    if (reEditMaskBtn) {
+      reEditMaskBtn.addEventListener('click', () => {
+        if (!lastOriginalImageObj || !lastMaskDataUrl) {
+          showToast('No previous mask session found to edit', '⚠️');
+          return;
+        }
+        baseImage = lastOriginalImageObj;
+        currentDisplayMode = 'original';
+
+        const restoreMaskImg = new Image();
+        restoreMaskImg.onload = () => {
+          maskCtx.clearRect(0, 0, maskCanvas.width, maskCanvas.height);
+          maskCtx.drawImage(restoreMaskImg, 0, 0, maskCanvas.width, maskCanvas.height);
+          maskPixelCount = lastMaskPixelCount || 50;
+          redrawCanvas();
+          checkMaskStatus();
+          showToast('Original relic & damage mask restored. Adjust and reconstruct anytime!', '↩');
+          document.getElementById('canvasStage').scrollIntoView({ behavior: 'smooth' });
+        };
+        restoreMaskImg.src = lastMaskDataUrl;
+      });
+    }
 
     function displayRestorationResult(origSrc, restoredSrc) {
       const section = document.getElementById('comparisonSection');

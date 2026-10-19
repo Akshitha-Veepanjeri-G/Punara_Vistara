@@ -126,10 +126,10 @@ const processImage = async () => {
         setTimeout(() => { if (statusMessageDiv) statusMessageDiv.classList.add('hidden'); }, 3000);
     } catch (error) {
         console.error("Processing Error:", error);
-        const errorMessage = "An error occurred during processing. Please check the console for details or try again.";
+        const errorMessage = error.message || "An error occurred during epigraphy processing. Please try again.";
         updateStatus(errorMessage, 'error');
-        transcribedTextDiv.textContent = 'Failed to extract text.';
-        translatedTextDiv.textContent = 'Failed to translate.';
+        if (transcribedTextDiv) transcribedTextDiv.innerHTML = `<span style="color: #f87171;">⚠️ ${errorMessage}</span>`;
+        if (translatedTextDiv) translatedTextDiv.innerHTML = `<span style="color: #94a3b8;">Click <strong>Process Image</strong> above to retry.</span>`;
     } finally {
         // Reset button state
         processButton.disabled = false;

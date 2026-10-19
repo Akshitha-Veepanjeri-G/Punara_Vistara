@@ -17,3 +17,8 @@ tempCodeRunnerFile.*
 Thumbs.db
 [Dd]esktop.ini
 .DS_Store
+
+# Environment Secrets
+.env
+*.env
+

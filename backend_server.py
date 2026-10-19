@@ -147,8 +147,20 @@ def run_inpainting(image_pil, mask_pil, description=None, material=None, seed=No
 # --------------------------------------------------------
 #  OCR + TRANSLATION (Gemini Multimodal API)
 # --------------------------------------------------------
-GEMINI_MODELS = ["gemini-3.8-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
-API_KEY = "AIzaSyDhwmr4iHM_Q3nC6BzUbenfELHU1rWrw-c"
+_env_path = os.path.join(os.path.dirname(__file__), '.env')
+if os.path.exists(_env_path):
+    try:
+        with open(_env_path, 'r', encoding='utf-8') as _ef:
+            for _line in _ef:
+                if '=' in _line and not _line.strip().startswith('#'):
+                    _k, _v = _line.strip().split('=', 1)
+                    os.environ[_k.strip()] = _v.strip().strip('"').strip("'")
+    except Exception as _e:
+        print(f"Note loading .env: {_e}")
+
+GEMINI_MODELS = ["gemini-3.8-flash", "gemini-3.5-flash", "gemini-3.7-flash", "gemini-flash-latest"]
+API_KEY = os.environ.get("GEMINI_API_KEY", "")
+
 
 def parse_epigraphy_output(raw_out):
     """
